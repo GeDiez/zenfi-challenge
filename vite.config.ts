@@ -31,6 +31,21 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       exclude: ['src/test/**', 'src/main.tsx', '**/*.d.ts'],
+      /*
+       * Enforced floors, set just under the numbers the suite actually reaches.
+       * A coverage badge nobody enforces starts lying the first time coverage
+       * drops, so CI fails here instead — the badge reports this floor, not a
+       * snapshot that quietly goes stale.
+       *
+       * They are floors, not targets: raise them when the real figure moves up,
+       * never lower them to make a red build green.
+       */
+      thresholds: {
+        statements: 90,
+        branches: 75,
+        functions: 88,
+        lines: 90,
+      },
     },
   },
 })

@@ -64,8 +64,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Coverage runs in CI, not just locally: the thresholds in vite.config.ts
+      # are what keeps the documented figure honest, and a threshold nobody
+      # runs is a comment.
       - name: Vitest
-        run: pnpm test
+        run: pnpm test:coverage
 
   build:
     name: Build
