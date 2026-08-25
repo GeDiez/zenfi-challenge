@@ -138,6 +138,12 @@ Logic lives in a co-located `hooks/useController.ts`; the component calls it onc
 
 **Everything under `src/components/` and `src/lib/` carries its own `__tests__/`.** They are behaviour tests: they assert what a user or a screen reader gets, never `className` or tag names.
 
+### A fixed overlay must escape the header
+
+The header carries `backdrop-blur`, and `backdrop-filter` establishes a containing block: a `position: fixed` overlay rendered inside it resolves against the HEADER, not the viewport. That collapsed the about dialog into a strip across the top. `AboutModal` portals to `document.body` for exactly this reason, and a test asserts the overlay's parent is `body`.
+
+The dialog is hand-rolled rather than a native `<dialog>` because jsdom does not implement `showModal()` — a native one could only be tested through a mock, which exercises the mock. Owning it means owning Escape, focus-into-panel, a Tab trap that wraps at both ends, focus restore to the trigger, and the body scroll lock. All five have tests.
+
 ### Accessible names are computed by TRIMMING and concatenating nodes
 
 Text split across sibling elements comes out glued: a label span plus a count span produced `"Alfa3movimientos"`, and no amount of whitespace between them fixes it — the algorithm trims each node. Where a control's name spans several visual pieces, put the readable phrase in ONE `sr-only` text node and mark the visual pieces `aria-hidden`. There is a test pinning this.

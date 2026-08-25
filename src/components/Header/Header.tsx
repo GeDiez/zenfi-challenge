@@ -1,3 +1,4 @@
+import { AboutModal } from '../AboutModal'
 import { GithubIcon } from '../icons'
 import { ThemeToggle } from '../ThemeToggle'
 import { ZenfiLogo } from '../ZenfiLogo'
@@ -17,6 +18,8 @@ export const Header = () => (
       </a>
 
       <nav className="flex items-center gap-2">
+        <AboutModal />
+
         <a
           href={GITHUB_URL}
           target="_blank"

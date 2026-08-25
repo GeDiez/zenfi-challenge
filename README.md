@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/GeDiez/zenfi-challenge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GeDiez/zenfi-challenge/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/badge/coverage-%E2%89%A590%25-2a78d6)](#tests-and-coverage)
-[![tests](https://img.shields.io/badge/tests-106-2a78d6)](#tests-and-coverage)
+[![tests](https://img.shields.io/badge/tests-116-2a78d6)](#tests-and-coverage)
 
 A personal-expenses landing built from a real bank export. It reads a month of
 transactions, cleans them, and reports where the money went — the total, the
@@ -56,7 +56,7 @@ pnpm vitest run --sequence.shuffle    # prove the suite is order-independent
 
 ## Tests and coverage
 
-106 tests across 16 files. Every folder under `src/components/` and `src/lib/`
+116 tests across 17 files. Every folder under `src/components/` and `src/lib/`
 carries its own `__tests__/`, plus the data pipeline.
 
 | Metric     | Actual | Enforced floor |
