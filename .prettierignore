@@ -1,0 +1,8 @@
+dist
+coverage
+node_modules
+package-lock.json
+
+# Skills vendored from other repos: authored content, not this project's source.
+# Reformatting them would rewrite someone else's document.
+.claude/skills

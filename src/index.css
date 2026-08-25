@@ -1,0 +1,137 @@
+@import 'tailwindcss';
+
+/*
+ * Dark mode is *selected*, not flipped: the `data-theme` stamp on <html> wins in
+ * both directions, and the OS preference only applies when no stamp is present.
+ * Tailwind's built-in `dark:` variant only reads prefers-color-scheme, so it is
+ * replaced here — otherwise the toggle and the utilities would disagree.
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+  &:where([data-theme='dark'] *) {
+    @slot;
+  }
+}
+
+/*
+ * Light-mode token values. Every color in the UI is addressed by the ROLE it
+ * plays, never by hue, so the dark block below only has to restate values.
+ * Palette source: validated data-viz reference palette.
+ */
+@theme static {
+  /* Surfaces and ink */
+  --color-page: #f9f9f7;
+  --color-surface: #fcfcfb;
+  --color-ink: #0b0b0b;
+  --color-ink-secondary: #52514e;
+  --color-ink-muted: #898781;
+  --color-grid: #e1e0d9;
+  --color-baseline: #c3c2b7;
+  --color-hairline: rgb(11 11 11 / 0.1);
+  --color-wash: rgb(11 11 11 / 0.04);
+
+  /* Categorical series. Fixed slot order — never cycled, never rank-assigned. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+
+  /* Sequential blue ramp (magnitude) */
+  --color-seq-100: #cde2fb;
+  --color-seq-250: #86b6ef;
+  --color-seq-450: #2a78d6;
+  --color-seq-600: #184f95;
+
+  /* Status. Fixed in both modes — never themed, never reused as a series. */
+  --color-good: #0ca30c;
+  --color-warning: #fab219;
+  --color-serious: #ec835a;
+  --color-critical: #d03b3b;
+
+  /* Directional delta ink (text, so it carries its own contrast) */
+  --color-delta-up: #006300;
+  --color-delta-down: #d03b3b;
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  /* The same dark values are declared under both scopes: the media query covers
+     the OS setting, the attribute scope covers the explicit toggle. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      color-scheme: dark;
+
+      --color-page: #0d0d0d;
+      --color-surface: #1a1a19;
+      --color-ink: #ffffff;
+      --color-ink-secondary: #c3c2b7;
+      --color-ink-muted: #898781;
+      --color-grid: #2c2c2a;
+      --color-baseline: #383835;
+      --color-hairline: rgb(255 255 255 / 0.1);
+      --color-wash: rgb(255 255 255 / 0.06);
+
+      --color-series-1: #3987e5;
+      --color-series-2: #d95926;
+      --color-series-3: #199e70;
+
+      --color-seq-100: #184f95;
+      --color-seq-250: #256abf;
+      --color-seq-450: #3987e5;
+      --color-seq-600: #86b6ef;
+
+      --color-delta-up: #0ca30c;
+      --color-delta-down: #d03b3b;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --color-page: #0d0d0d;
+    --color-surface: #1a1a19;
+    --color-ink: #ffffff;
+    --color-ink-secondary: #c3c2b7;
+    --color-ink-muted: #898781;
+    --color-grid: #2c2c2a;
+    --color-baseline: #383835;
+    --color-hairline: rgb(255 255 255 / 0.1);
+    --color-wash: rgb(255 255 255 / 0.06);
+
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+
+    --color-seq-100: #184f95;
+    --color-seq-250: #256abf;
+    --color-seq-450: #3987e5;
+    --color-seq-600: #86b6ef;
+
+    --color-delta-up: #0ca30c;
+    --color-delta-down: #d03b3b;
+  }
+
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* Tabular figures belong in columns that must align vertically — table rows
+     and axis ticks — never on a large standalone number. */
+  .num-align {
+    font-variant-numeric: tabular-nums;
+  }
+}
