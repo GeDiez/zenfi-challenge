@@ -28,7 +28,7 @@ Run a single test file or a single test case:
 
 ```bash
 npm test -- src/App.test.tsx
-npx vitest run -t "increments the counter"
+npx vitest run -t "persists the theme choice"
 ```
 
 ## Architecture and configuration
@@ -83,7 +83,16 @@ Series and status tokens come from a palette validated for colorblind separation
 
 ### TypeScript project references
 
-`tsconfig.json` is a solution file with no `files`; it references `tsconfig.app.json` (covers `src`, DOM libs, `jsx: react-jsx`) and `tsconfig.node.json` (covers `vite.config.ts`, Node types). Compiler options must go in the right leaf config — editing the root does nothing. Both enable `verbatimModuleSyntax` and `erasableSyntaxOnly`, so type-only imports need the `type` keyword and TS-only runtime syntax (enums, parameter properties) is rejected.
+`tsconfig.json` is a solution file with no `files`; it references `tsconfig.app.json` (covers `src`, DOM libs, `jsx: react-jsx`) and `tsconfig.node.json` (covers `vite.config.ts`, Node types). Compiler options must go in the right leaf config — editing the root does nothing. Both enable `strict`, `verbatimModuleSyntax` and `erasableSyntaxOnly`, so type-only imports need the `type` keyword and TS-only runtime syntax (enums, parameter properties) is rejected. `strict` was not in the Vite template and was turned on afterwards; do not let it drift back off.
+
+## Project skills
+
+`.claude/skills/` holds three repo-scoped skills — `component-anatomy`, `testing`, `typescript` — adapted from another repo and rewritten against this stack. They are self-contained: none of them points at a skill that does not exist here. Two consequences when editing them:
+
+- **Do not reintroduce cross-skill pointers.** Each skill states its own scope and what it does not own. A pointer to a skill this repo lacks is a dead end for whoever reads it next.
+- **`testing/references/mocking.md` is deliberately unpopulated.** There is no HTTP or query client yet, so it describes what belongs there rather than inventing recipes for an API that does not exist.
+
+They are excluded from Prettier in `.prettierignore`.
 
 ## Current state
 

@@ -1,117 +1,78 @@
 ---
 name: typescript
 description: >
-  THE single source of truth for TypeScript rules in ytp-investor-web: the MANDATORY migration policy
-  (new files are always .ts/.tsx, rename JS/JSX on touch, scope the rename tightly, never merge a
-  half-done migration), `tsconfig` highlights, the bare-base-name path aliases (`@gql` is the only
-  `@`-prefixed one), inference-first typing (no hand-written hook return-type interfaces), React 19
-  `ref`-as-prop, and the type-level bans: no `any`, no escape-hatch `as`, no `@ts-ignore`/
-  `@ts-nocheck`, no PropTypes in new code. Deterministic conventions are enforced by
-  `eslint.config.js`, not restated here.
-  Trigger: When writing or editing ANY .ts/.tsx/.js/.jsx file, creating a new file (must be TS),
-  renaming a JS file you're touching, typing a hook or component, reaching for `any`/`as`/a type
-  suppression, or deciding whether a rename has grown into a refactor.
+  THE single source of truth for TypeScript rules in this repo: TS-only source files, `tsconfig`
+  highlights and the project-references split, inference-first typing (no hand-written hook
+  return-type interfaces), React 19 `ref`-as-prop, comment judgment, flattened control flow, and
+  the type-level bans — no `any`, no escape-hatch `as`, no `@ts-ignore`/`@ts-nocheck`, no
+  suppressions. Deterministic conventions are enforced by the linter, not restated here.
+  Trigger: When writing or editing ANY .ts/.tsx file, creating a new file, typing a hook or
+  component, or reaching for `any`/`as`/a type suppression.
 license: Apache-2.0
 metadata:
   author: yotepresto
-  version: "1.0"
+  version: '1.1'
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
 ## TypeScript
 
-This skill owns every TypeScript rule. `component-anatomy`, `form-anatomy`, `view-anatomy`,
-`navigator-anatomy`, `modal-anatomy`, `graphql`, `testing`, `redux` and `migrate-legacy-code` point
-here.
+This skill owns every TypeScript rule.
 
-- GraphQL operations, codegen and Apollo wrappers → **`graphql`**
-- Deterministic bans (imports, `schema.*`, `sx`, complexity, nesting) → **`eslint.config.js`**
-- Evolving a shared utility without breaking its other callers → **`shared-hooks`**
+### Scope
+
+It owns typing, the compiler configuration, and the type-level bans. It does not own component
+structure, styling, or test conventions.
 
 ---
 
-## 1. The migration is MANDATORY
+## 1. Source is TypeScript, always
 
-The codebase is migrating from JS/JSX to TS/TSX. **This is not optional and not "nice to have".**
+- **New files are ALWAYS `.ts` / `.tsx`.** Never create a `.js` / `.jsx` in `src/`.
+- **No PropTypes.** Props are a local `interface`, checked at compile time.
+- If a `.js` file ever lands here, rename it as part of the same change rather than leaving a
+  typed codebase with an untyped hole in it. Rename **only the file you were already editing** —
+  chaining renames into unrelated files turns one reviewable change into an unreviewable one.
 
-- **New files**: ALWAYS `.ts` / `.tsx`. Never create a new `.js` / `.jsx`.
-- **Touching an existing JS/JSX file**: rename `.js` → `.ts` and `.jsx` → `.tsx` as part of the same
-  change. **The rename IS the rule** — doing the edit without the rename is wrong.
-- **No PropTypes in new code.** When you rename a `.jsx` that has them, replace them with TS types.
-
-### Scope the rename tightly
-
-Rename **only the file you were already editing**. Do NOT chain renames into unrelated files just
-because they're imported by the one you changed. A migration that sprawls from one file to ten loses
-its reviewability and is very likely to break something unrelated. One PR = one logical change; the
-rename rides along, it does not become the change.
-
-### The only escape hatch
-
-When a single-file rename would genuinely require a meaningfully larger refactor (cascading type
-errors across many files, breaking circular dependencies, restructuring exported APIs). **This should
-be rare** — if it keeps happening, the boundary between "rename" and "refactor" has slipped. When you
-hit it:
-
-1. Stop the rename; leave the file as `.js`/`.jsx`.
-2. Note in the PR description why it was deferred (1–2 sentences) so the reviewer can validate it.
-3. File a follow-up so the migration gets sized and reviewed on its own.
-
-**Do NOT merge a half-done migration.** A partial rename — broken imports, types loosely papered over
-with `any`, suppressions scattered around — is worse than not migrating at all. Either the file
-becomes properly typed in this PR, or it stays JS and migrates in a dedicated one.
+**Never merge a half-done conversion.** A file with broken imports, types papered over with `any`,
+or suppressions scattered around is worse than one that was left alone. Either it becomes properly
+typed in this change, or it stays out of scope.
 
 ## 2. Hard bans
 
-- **No `any`.** The existing **31** (13 files) are legacy debt; don't add to the pile. For a JS
-  component you need to type at a call site, write a proper generic declaration — don't reach for
-  `any`. Every one of the 31 only passes CI because an `eslint-disable` hides it — see below.
-- **No `as` casts** to escape a type problem. Fix the type.
-- **No `@ts-ignore` / `@ts-nocheck`.** ESLint enforces `@typescript-eslint/ban-ts-comment` as `error`.
+- **No `any`.** If a type genuinely can't be expressed, write a proper generic or narrow at the
+  boundary. `any` disables checking silently and spreads to everything it touches.
+- **No `as` casts to escape a type problem.** Fix the type. A cast that "makes the error go away"
+  moves the failure from compile time to runtime. Narrowing with a real type guard is not a cast.
+- **No `@ts-ignore` / `@ts-nocheck`.**
+- **No `eslint-disable`.** A suppression hides a real violation from every future reader. If a rule
+  is wrong for this codebase, change it in the config where the decision is visible and reviewable.
 
-Copying an existing bad pattern is not an excuse. If a type genuinely can't be expressed, stop and
-surface it instead of suppressing it.
+Copying an existing bad pattern is not an excuse. If you cannot express a type, stop and surface it
+rather than suppressing it.
 
-**Never `eslint-disable`** either. 120 directives across 86 files hide 137 real violations today —
-91 `exhaustive-deps`, 31 `no-explicit-any`, 13 `no-unused-vars`, 2 `no-useless-escape`. Count them
-with `npx eslint ./src --no-inline-config`, never by grepping for the comment: one file-level
-disable hides many violations, so the directive count and the violation count are different numbers
-for different jobs. That gap is exactly why the ban belongs in the linter's own config rather than
-a doc. See the ratchet comment in `eslint.config.js`.
+## 3. `tsconfig` — the project-references split
 
-## 3. `tsconfig.json` highlights
+`tsconfig.json` is a solution file with no `files` of its own. It references two leaf configs, and
+**compiler options must go in the right leaf — editing the root does nothing**:
 
-- `strict: true`, `noUnusedLocals: true`, `noUnusedParameters: true`,
-  `noFallthroughCasesInSwitch: true`
-- `jsx: "react-jsx"` (automatic JSX transform — no need to `import React`)
-- `allowJs: true` (will tighten once the migration completes)
-- `moduleResolution: "bundler"` (Vite-friendly)
-- `noEmit: true` (tsc type-checks only; Vite builds)
+- `tsconfig.app.json` → `src`, DOM libs, `jsx: "react-jsx"` (no `import React` needed).
+- `tsconfig.node.json` → `vite.config.ts`, Node types.
 
-## 4. Path aliases — bare base names
+Both enable:
 
-Aliases are **bare base names**, NOT `@/`-prefixed:
+- `strict: true`, plus `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`.
+- `verbatimModuleSyntax` — a type-only import MUST say `import type`, or the emit keeps a runtime
+  import of something that doesn't exist at runtime.
+- `erasableSyntaxOnly` — TS-only runtime syntax is rejected. No `enum`, no parameter properties, no
+  namespaces. Use a `const` object with a derived union instead of an enum.
+- `moduleResolution: "bundler"` and `noEmit: true` — `tsc` type-checks, the bundler builds.
 
-The ALIASES below are real and are the point of the example. The imported names marked
-`Example*` are deliberate placeholders — stand-ins for "some component" / "some hook", so this
-snippet can never drift out of sync with the codebase. The rest (`Button`, `FULL_PATHS`,
-`mockAxios`, `gql`) are the actual API you import by that name.
+## 4. Imports
 
-```ts
-import { Button } from 'ui';
-import { ExampleCard } from 'components'; // placeholder: any component/index.js export
-import { useExampleThing } from 'hooks'; // placeholder: any src/hooks export
-import { FULL_PATHS } from 'config/navigation';
-import { mockAxios } from 'tests/utils';
-
-// GraphQL is the ONLY `@`-prefixed alias:
-import { gql, useQuery } from '@gql';
-```
-
-> Note what the placeholders are NOT hiding: `components` resolves to
-> `src/components/index.js`, so only what that barrel re-exports is reachable through it. A
-> view-local component (`src/views/**`) is not — reach it by its own path, and see
-> `component-anatomy` for which of the two it should be in the first place.
+No path aliases are configured. Imports are relative, and a module's depth in the tree is a real
+cost: if a file needs `../../../` to reach a sibling concern, that is a signal the two belong closer
+together, not a signal to add an alias.
 
 ## 5. Type conventions
 
@@ -123,32 +84,26 @@ import { gql, useQuery } from '@gql';
 - **Props**: a local `interface Props` next to the component. Not exported unless a consumer needs it.
 - **React 19: `ref` is a plain prop.** Declare `ref?: React.Ref<HTMLInputElement>` in `Props`.
   **Never `forwardRef`.**
-- **Always `import type`** when importing types only.
+- **Always `import type`** when importing types only — the compiler config requires it.
 - **No dedicated `src/types/` directory.** Domain types co-locate with their owners.
-- **Global ambient types**: `types/global.d.ts` (module augmentations, SVG/asset modules, the
-  `TestUtils` global).
-- **GraphQL types are always the generated ones** — import from `@gql/generated/graphql`, never
-  hand-roll an input/result shape. See `graphql`.
+- **Global ambient types** live in a single `.d.ts` (module augmentations, asset modules).
 
 ## 6. Comments — nothing enforces this, so it is on you
 
-No lint rule checks comment content. CI runs a Gemini no-comments review, and that is the only
-backstop — so treat the rules below as the real gate.
+No lint rule checks comment content. Treat the rules below as the real gate.
 
 **Default to NONE.** Let naming and structure carry the meaning. Comment only genuinely
 hard-to-follow logic, or an intentional non-obvious flow-break.
 
 - **The best comment is the one you don't write.** Don't restate what the code or naming already
   says (`// open the modal` above `modal.onOpen()`), don't narrate pattern-following code, and don't
-  describe a whole controller or module top-to-bottom — comment the one non-obvious line.
-- **Explain the rule, not the ticket.** NEVER reference a PRD, Figma, Jira id or requirement code
-  (`RD-117`, `RN-08`, `caso 12`, `TD §…`) in a permanent comment — they mean nothing to a future
-  reader. State the business rule directly, and only where the code isn't already explicit (e.g.
-  *why* a value is hardcoded pending a backend field).
-- **Don't restate conventions.** If a skill documents it (arrow + `useController`, tokens, i18n
-  keys…), don't narrate it in code.
-- **Cross-task seams get a TODO.** When a task leaves a slot for a later one, mark it
-  `// TODO(gibran): …`. Ticket ids ARE allowed *here* — the TODO is temporary and gets deleted when
+  describe a whole module top-to-bottom — comment the one non-obvious line.
+- **Explain the rule, not the ticket.** NEVER reference a PRD, Figma, ticket id or requirement code
+  in a permanent comment — they mean nothing to a future reader. State the rule directly, and only
+  where the code isn't already explicit (e.g. *why* a value is hardcoded pending a backend field).
+- **Don't restate conventions.** If a convention is documented, don't narrate it in code.
+- **Cross-task seams get a TODO.** When a change leaves a slot for a later one, mark it
+  `// TODO(name): …`. Ticket ids ARE allowed *here* — the TODO is temporary and gets deleted when
   the future change lands. This is the ONLY place a ticket id belongs.
 
 Long function hard to read? Extract cohesive helpers, never section-comments.
@@ -163,15 +118,19 @@ returns:
 if (user) { if (user.isActive) { if (hasBalance) { … } } }
 
 // ✅ guards
-if (!user?.isActive) return null;
-if (!hasBalance) return <EmptyState />;
+if (!user?.isActive) return null
+if (!hasBalance) return <EmptyState />
 ```
 
 If a function needs several levels of nesting to express itself, it is doing more than one thing —
-extract cohesive helpers rather than narrating the nesting with comments. `eslint.config.js` enforces
-the ceiling (`max-depth: 2`, 8 violations today) but not the fix; the fix is above.
+extract cohesive helpers rather than narrating the nesting with comments.
 
 ## 8. Checking your work
 
-Run `pnpm typecheck` and `pnpm lint` over the **whole** `./src`, never scoped to your diff — that is
-what CI does, and a scoped run hides failures elsewhere. Exact invocations in **`toolchain`**.
+Type-check and lint the **whole** project, never scoped to your diff — a scoped run hides failures
+elsewhere, and the whole project is what CI checks:
+
+```bash
+npm run typecheck
+npm run lint
+```
