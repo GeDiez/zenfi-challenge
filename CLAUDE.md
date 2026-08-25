@@ -121,4 +121,20 @@ They are excluded from Prettier in `.prettierignore`.
 
 ## Current state
 
-`src/App.tsx` is a setup-verification page, not product content: it renders the stack and the theme swatches to prove both resolve. It is meant to be replaced wholesale once the app has a subject. `recharts` is installed and verified against React 19 but nothing imports it yet, so it is tree-shaken out of the bundle.
+The app is a personal-expenses landing: a header, a hero with the month's total and four category cards, and a transactions table with a category filter. `recharts` is installed and verified against React 19 but nothing imports it yet, so it is tree-shaken out of the bundle.
+
+### Transactions are the only data input
+
+`src/data/expenses.ts` exports `TRANSACTIONS`, and **every other figure is derived from it** — the category totals, the monthly total, each card's share. Replacing that module with a real source is the whole migration. Never hand-maintain a second list of totals beside it: two lists agree the day they are written and drift the first time either is touched.
+
+### One mapping from a category to how it looks
+
+`src/lib/categoryPresentation.tsx` is the single place that binds a category to its colour slot and icon. A second copy in a component would leave the same category two different colours on the same page. The slot each category gets is FIXED — assigning colour by current rank repaints everything whenever one category overtakes another, and a reader who learned "comidas is yellow" is then misled.
+
+### Components live one per folder
+
+`src/components/<Name>/<Name>.tsx` with an `index.ts` barrel, and tests in a co-located `__tests__/`. Import from the folder (`./components/Header`), never the inner file. Moving a component **requires restarting the dev server** — Vite keeps the old module graph and serves a blank page while `tsc` and `build` stay green, which reads like a code bug and is not one.
+
+### The Zenfi logo is vendored, with one deliberate edit
+
+`ZenfiLogo.tsx` inlines the official asset. Its wordmark shipped as `fill="white"` — the file is the `-light` variant for dark backgrounds — so those paths now use `currentColor` and one file serves both themes. The isotype keeps its exact brand hex values. The raw `.svg` is intentionally not kept in `src/assets`: an unused copy invites an import that silently restores the invisible-on-light wordmark.
