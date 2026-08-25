@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
-import { EXPENSE_CATEGORIES } from './data/expenses'
-import { currency, share } from './lib/format'
+import { FEATURED_CATEGORIES, MONTHLY_TOTAL, TRANSACTIONS } from './data'
+import { currency, percent } from './lib/format'
 
 describe('App', () => {
   // The theme is stamped on <html> and persisted, neither of which Testing
@@ -26,29 +26,48 @@ describe('App', () => {
       expect(link.getAttribute('rel')).toContain('noopener')
     })
 
-    it('offers the theme control', () => {
+    it('is icon-only but still announces what it does', () => {
       render(<App />)
 
-      expect(
-        screen.getByRole('button', { name: /^Tema: Sistema/i }),
-      ).toBeInTheDocument()
+      // An icon-only control without an accessible name is announced as just
+      // "button". The label is the whole interface for a screen reader here.
+      const toggle = screen.getByRole('button', {
+        name: /cambiar a tema (oscuro|claro)/i,
+      })
+      expect(toggle.textContent).toBe('')
     })
 
-    it('stamps the chosen theme on the document root, in both directions', async () => {
+    it('follows the system until the viewer chooses, then the choice wins', async () => {
       const user = userEvent.setup()
       render(<App />)
 
-      // Starts on "system", which leaves no stamp so the OS preference applies.
+      // No stamp means the CSS falls back to prefers-color-scheme.
       expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
 
-      await user.click(screen.getByRole('button', { name: /^Tema: Sistema/i }))
-      expect(document.documentElement.getAttribute('data-theme')).toBe('light')
-
-      await user.click(screen.getByRole('button', { name: /^Tema: Claro/i }))
+      await user.click(
+        screen.getByRole('button', { name: /cambiar a tema oscuro/i }),
+      )
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
 
-      await user.click(screen.getByRole('button', { name: /^Tema: Oscuro/i }))
-      expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+      await user.click(
+        screen.getByRole('button', { name: /cambiar a tema claro/i }),
+      )
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+    })
+
+    it('persists the choice across remounts', async () => {
+      const user = userEvent.setup()
+      const first = render(<App />)
+
+      await user.click(
+        screen.getByRole('button', { name: /cambiar a tema oscuro/i }),
+      )
+      first.unmount()
+
+      render(<App />)
+      expect(
+        screen.getByRole('button', { name: /cambiar a tema claro/i }),
+      ).toBeInTheDocument()
     })
   })
 
@@ -64,23 +83,21 @@ describe('App', () => {
       ).toBeInTheDocument()
     })
 
-    it('shows a total that actually equals the sum of the categories', () => {
+    it('shows a total that actually equals the sum of the transactions', () => {
       render(<App />)
 
       // Summed independently of the module's own derived export, so a broken
       // reduce cannot make this test agree with the bug.
-      const expected = EXPENSE_CATEGORIES.reduce(
-        (acc, category) => acc + category.amount,
-        0,
-      )
-
+      const expected = TRANSACTIONS.reduce((acc, tx) => acc + tx.amount, 0)
+      expect(expected).toBeCloseTo(MONTHLY_TOTAL, 2)
       expect(screen.getByText(currency(expected))).toBeInTheDocument()
     })
 
-    it('renders one card per category, each naming itself', () => {
+    it('features exactly four categories, each naming itself', () => {
       render(<App />)
 
-      for (const category of EXPENSE_CATEGORIES) {
+      expect(FEATURED_CATEGORIES).toHaveLength(4)
+      for (const category of FEATURED_CATEGORIES) {
         expect(
           screen.getByRole('heading', { name: category.label, level: 3 }),
         ).toBeInTheDocument()
@@ -90,22 +107,16 @@ describe('App', () => {
     it('states each category share against the total, not just its amount', () => {
       render(<App />)
 
-      const total = EXPENSE_CATEGORIES.reduce(
-        (acc, category) => acc + category.amount,
-        0,
-      )
-      const food = EXPENSE_CATEGORIES.find((c) => c.id === 'food')
-      expect(food).toBeDefined()
-
+      const biggest = FEATURED_CATEGORIES[0]
       const card = screen
-        .getByRole('heading', { name: food!.label, level: 3 })
+        .getByRole('heading', { name: biggest.label, level: 3 })
         .closest('article')
       expect(card).not.toBeNull()
 
       const scoped = within(card as HTMLElement)
-      expect(scoped.getByText(currency(food!.amount))).toBeInTheDocument()
+      expect(scoped.getByText(currency(biggest.amount))).toBeInTheDocument()
       expect(
-        scoped.getByText(new RegExp(share(food!.amount, total))),
+        scoped.getByText(new RegExp(percent(biggest.share))),
       ).toBeInTheDocument()
     })
   })

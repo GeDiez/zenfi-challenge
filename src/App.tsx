@@ -1,6 +1,7 @@
+import { ExpensesPanel } from './components/ExpensesPanel'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
-import { TransactionsTable } from './components/TransactionsTable'
+import { MonthStats } from './components/MonthStats'
 
 function App() {
   return (
@@ -8,7 +9,9 @@ function App() {
       <Header />
       <main>
         <Hero />
-        <TransactionsTable />
+        <MonthStats />
+        {/* Everything from here down is scoped by the panel's filter row. */}
+        <ExpensesPanel />
       </main>
     </div>
   )

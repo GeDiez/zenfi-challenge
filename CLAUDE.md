@@ -121,7 +121,7 @@ They are excluded from Prettier in `.prettierignore`.
 
 ## Current state
 
-The app is a personal-expenses landing: a header, a hero with the month's total and four category cards, and a transactions table with a category filter. `recharts` is installed and verified against React 19 but nothing imports it yet, so it is tree-shaken out of the bundle.
+The app is a personal-expenses landing: a header, a hero with the month's total and four category cards, a month-stats row, a daily-spend line chart, and a transactions table. One filter row (category + card, composing with AND) sits above the chart and scopes everything below it; the hero and the stats sit above it and report the month. `recharts` is installed and verified against React 19 but nothing imports it yet, so it is tree-shaken out of the bundle.
 
 ### Transactions are the only data input
 
@@ -130,6 +130,26 @@ The app is a personal-expenses landing: a header, a hero with the month's total 
 ### One mapping from a category to how it looks
 
 `src/lib/categoryPresentation.tsx` is the single place that binds a category to its colour slot and icon. A second copy in a component would leave the same category two different colours on the same page. The slot each category gets is FIXED — assigning colour by current rank repaints everything whenever one category overtakes another, and a reader who learned "comidas is yellow" is then misled.
+
+### Every component has a `useController`, and its JSX has none
+
+Logic lives in a co-located `hooks/useController.ts`; the component calls it once and destructures. The JSX reads as a list of elements consuming already-computed values — no `reduce`, no `filter` chains, no conditional assembly inline. `src/lib/` follows the same one-folder-per-utility shape with a barrel.
+
+**Everything under `src/components/` and `src/lib/` carries its own `__tests__/`.** They are behaviour tests: they assert what a user or a screen reader gets, never `className` or tag names.
+
+### Accessible names are computed by TRIMMING and concatenating nodes
+
+Text split across sibling elements comes out glued: a label span plus a count span produced `"Alfa3movimientos"`, and no amount of whitespace between them fixes it — the algorithm trims each node. Where a control's name spans several visual pieces, put the readable phrase in ONE `sr-only` text node and mark the visual pieces `aria-hidden`. There is a test pinning this.
+
+### Colour never carries meaning alone, and every pairing was measured
+
+Three fixed results drive the code, and each has a comment where it applies:
+
+- **`--color-good` fails as text** (3.18:1 on the light page). Success/failure _text_ uses `--color-delta-up` / `--color-delta-down`; the status tokens are fills.
+- **No single text colour clears 4.5:1 across the categorical hues** — white fails on three, ink on two. Category and CTA cards are a 12% tint with ink copy, never a saturated slab. Icons on a saturated chip use `--color-on-accent` (ink), measured at ≥3.98:1 everywhere.
+- **The CTA button is `seq-600`**, which flips deep-blue → pale-blue between modes, with `--color-on-cta` flipping white → ink. `series-1` with white text measures 4.42:1 / 3.64:1 and fails.
+
+Sign, arrow and wording always carry direction too, so a negative balance reads as negative without colour.
 
 ### Components live one per folder
 

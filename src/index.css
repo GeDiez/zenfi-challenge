@@ -37,17 +37,26 @@
   /*
    * Categorical series. Fixed slot order — never cycled, never rank-assigned.
    *
-   * This exact four-hue set was chosen because it is one of only two
-   * combinations from the source palette that clear every colour-blind and
-   * normal-vision separation gate across ALL pairs in BOTH modes. The stock
-   * fourth slot (orange) does not: against yellow it measures ΔE 13.7 in light
-   * and 4.8 under deuteranopia in dark, i.e. the same colour to many readers.
-   * Re-run the palette validator before adding a fifth.
+   * SLOT ORDER IS THE SAFETY MECHANISM, not decoration. These ten hues in this
+   * exact sequence clear every adjacent separation gate in BOTH modes (light
+   * CVD 7.2 / normal 19.6; dark CVD 8.6 / normal 15.3). Re-ordering them breaks
+   * that: the same ten with aqua beside teal fails the dark normal-vision floor
+   * at ΔE 11.4. Never reorder or extend without re-running the validator on the
+   * adjacent pairlist in both modes.
+   *
+   * Light CVD sits in the 6–8 band, which is legal ONLY because a label is
+   * present everywhere a swatch is. Strip the labels and this encoding breaks.
    */
   --color-series-1: #2a78d6; /* blue */
   --color-series-2: #eda100; /* yellow */
   --color-series-3: #e87ba4; /* magenta */
   --color-series-4: #008300; /* green */
+  --color-series-5: #e34948; /* red */
+  --color-series-6: #8b2f6b; /* plum */
+  --color-series-7: #1baf7a; /* aqua */
+  --color-series-8: #4a3aa7; /* violet */
+  --color-series-9: #eb6834; /* orange */
+  --color-series-10: #0288a8; /* teal */
 
   /* Sequential blue ramp (magnitude) */
   --color-seq-100: #cde2fb;
@@ -67,6 +76,14 @@
    * while white falls to 2.17:1 on yellow and 2.69:1 on magenta.
    */
   --color-on-accent: #0b0b0b;
+
+  /*
+   * Text sitting on the solid call-to-action, whose background is `seq-600` and
+   * therefore flips from a deep blue in light to a pale blue in dark. Measured:
+   * white on #184f95 is 8.10:1, ink on #86b6ef is 9.33:1. A single fixed value
+   * would fail one of the two.
+   */
+  --color-on-cta: #ffffff;
 
   /* Directional delta ink (text, so it carries its own contrast) */
   --color-delta-up: #006300;
@@ -97,6 +114,12 @@
       --color-series-2: #c98500;
       --color-series-3: #d55181;
       --color-series-4: #008300;
+      --color-series-5: #e66767;
+      --color-series-6: #b8479a;
+      --color-series-7: #199e70;
+      --color-series-8: #9085e9;
+      --color-series-9: #d95926;
+      --color-series-10: #22a3bd;
 
       --color-seq-100: #184f95;
       --color-seq-250: #256abf;
@@ -105,6 +128,7 @@
 
       --color-delta-up: #0ca30c;
       --color-delta-down: #d03b3b;
+      --color-on-cta: #0b0b0b;
     }
   }
 
@@ -125,6 +149,12 @@
     --color-series-2: #c98500;
     --color-series-3: #d55181;
     --color-series-4: #008300;
+    --color-series-5: #e66767;
+    --color-series-6: #b8479a;
+    --color-series-7: #199e70;
+    --color-series-8: #9085e9;
+    --color-series-9: #d95926;
+    --color-series-10: #22a3bd;
 
     --color-seq-100: #184f95;
     --color-seq-250: #256abf;
@@ -133,6 +163,7 @@
 
     --color-delta-up: #0ca30c;
     --color-delta-down: #d03b3b;
+    --color-on-cta: #0b0b0b;
   }
 
   :root {

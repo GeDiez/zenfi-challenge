@@ -1,13 +1,8 @@
-import { useMemo, useState } from 'react'
-import {
-  CATEGORY_LABELS,
-  TRANSACTIONS,
-  type ExpenseCategoryId,
-} from '../../data/expenses'
-import { CATEGORY_PRESENTATION } from '../../lib/categoryPresentation'
-import { currency, shortDate } from '../../lib/format'
-import { CategoryFilter } from '../CategoryFilter'
+import { DISCARDED, PERIOD, type Transaction } from '../../data'
+import { categoryPresentation } from '../../lib/categoryPresentation'
+import { currency, monthName, shortDate } from '../../lib/format'
 import { TransactionFlag } from '../TransactionFlag'
+import { useController } from './hooks/useController'
 
 const COLUMNS = [
   { key: 'id', header: 'ID', numeric: false },
@@ -19,35 +14,13 @@ const COLUMNS = [
   { key: 'category', header: 'Categoría', numeric: false },
 ]
 
-export const TransactionsTable = () => {
-  const [selected, setSelected] = useState<ReadonlySet<ExpenseCategoryId>>(
-    new Set(),
-  )
+type Props = {
+  /** Already filtered upstream — this component never filters. */
+  rows: Transaction[]
+}
 
-  const toggle = (id: ExpenseCategoryId) => {
-    setSelected((current) => {
-      const next = new Set(current)
-      // Toggling the last active category returns to "Todas" rather than
-      // leaving an empty table nobody asked for.
-      if (!next.delete(id)) next.add(id)
-      return next
-    })
-  }
-
-  const rows = useMemo(
-    () =>
-      selected.size === 0
-        ? TRANSACTIONS
-        : TRANSACTIONS.filter((tx) => selected.has(tx.category)),
-    [selected],
-  )
-
-  const shownTotal = useMemo(
-    () => rows.reduce((acc, tx) => acc + tx.amount, 0),
-    [rows],
-  )
-
-  const isFiltered = selected.size > 0
+export const TransactionsTable = ({ rows }: Props) => {
+  const { decorated, summary, isEmpty } = useController(rows)
 
   return (
     <section
@@ -57,13 +30,13 @@ export const TransactionsTable = () => {
       className="mx-auto max-w-6xl scroll-mt-24 px-6 pt-4 pb-20"
       aria-labelledby="movimientos-title"
     >
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6">
         <div>
           <h2
             id="movimientos-title"
             className="text-2xl font-semibold tracking-tight text-ink"
           >
-            Movimientos
+            Tus gastos de {monthName(PERIOD)}
           </h2>
           {/*
             The filtered sum is stated, not left to be inferred. Without it a
@@ -72,21 +45,14 @@ export const TransactionsTable = () => {
           */}
           <p
             className="mt-1 text-sm text-ink-secondary"
-            // Announced when the filter changes, so a screen-reader user is
-            // told the table reshaped instead of discovering it by exploring.
-            aria-live="polite"
+            // `role="status"` already implies aria-live="polite", and it names
+            // what this line IS: the table's current state, announced when the
+            // filter reshapes it instead of left to be discovered.
+            role="status"
           >
-            {isFiltered
-              ? `${String(rows.length)} de ${String(TRANSACTIONS.length)} movimientos · ${currency(shownTotal)}`
-              : `Los ${String(TRANSACTIONS.length)} cargos que componen el total del mes.`}
+            {summary}
           </p>
         </div>
-
-        <CategoryFilter
-          selected={selected}
-          onToggle={toggle}
-          onClear={() => setSelected(new Set())}
-        />
       </div>
 
       {/*
@@ -117,7 +83,17 @@ export const TransactionsTable = () => {
           </thead>
 
           <tbody>
-            {rows.map((tx) => (
+            {isEmpty && (
+              <tr>
+                <td
+                  colSpan={COLUMNS.length}
+                  className="px-5 py-10 text-center text-sm text-ink-muted"
+                >
+                  Ningún movimiento coincide con el filtro.
+                </td>
+              </tr>
+            )}
+            {decorated.map(({ tx, flags }) => (
               <tr
                 key={tx.id}
                 className="border-b border-hairline last:border-0"
@@ -134,48 +110,56 @@ export const TransactionsTable = () => {
                   {shortDate(tx.date)}
                 </td>
 
-                <td className="px-5 py-3.5 font-medium text-ink">
-                  {tx.description}
+                <td className="max-w-xs truncate px-5 py-3.5 font-medium text-ink">
+                  {/* Long merchant strings are clamped with an ellipsis and
+                        the full text stays reachable through the title. */}
+                  <span title={tx.description}>{tx.description}</span>
                 </td>
 
                 <td className="px-5 py-3.5 whitespace-nowrap text-ink-secondary">
-                  {tx.account}
+                  {tx.account ?? (
+                    <span className="text-ink-muted" aria-label="Sin cuenta">
+                      —
+                    </span>
+                  )}
                 </td>
 
                 <td className="px-5 py-3.5">
-                  {tx.flags.length === 0 ? (
-                    // An em dash, not an empty cell: it says "no flags" rather
-                    // than leaving the reader unsure whether data is missing.
+                  {flags.length === 0 ? (
+                    // An em dash, not an empty cell: it says "no flags"
+                    // rather than leaving the reader unsure data is missing.
                     <span className="text-ink-muted" aria-label="Sin marcas">
                       —
                     </span>
                   ) : (
                     <span className="flex flex-wrap gap-1.5">
-                      {tx.flags.map((flag) => (
+                      {flags.map((flag) => (
                         <TransactionFlag key={flag} flag={flag} />
                       ))}
                     </span>
                   )}
                 </td>
 
-                {/* Amounts align down the column, so these DO get tabular figures. */}
+                {/* Amounts align down the column, so these DO get tabular
+                      figures. */}
                 <td className="num-align px-5 py-3.5 text-right font-medium whitespace-nowrap text-ink">
                   {currency(tx.amount)}
                 </td>
 
                 <td className="px-5 py-3.5 whitespace-nowrap">
                   <span className="flex items-center gap-2">
-                    {/* The swatch carries category identity; the text stays in
-                        ink so it never inherits a hue that fails contrast. */}
+                    {/* The swatch carries category identity; the text stays
+                          in ink so it never inherits a hue that fails
+                          contrast. */}
                     <span
                       aria-hidden="true"
                       className="inline-block h-2.5 w-2.5 shrink-0 rounded-xs"
                       style={{
-                        backgroundColor: `var(${CATEGORY_PRESENTATION[tx.category].colorVar})`,
+                        backgroundColor: `var(${categoryPresentation(tx.categoryId).colorVar})`,
                       }}
                     />
                     <span className="text-ink-secondary">
-                      {CATEGORY_LABELS[tx.category]}
+                      {tx.categoryLabel}
                     </span>
                   </span>
                 </td>
@@ -185,9 +169,14 @@ export const TransactionsTable = () => {
         </table>
       </div>
 
+      {/*
+        The cleaning is stated, not hidden. A total that quietly omits rows is
+        worse than one that is visibly incomplete.
+      */}
       <p className="mt-4 text-xs text-ink-muted">
-        Datos de ejemplo. Los totales del encabezado se derivan de esta misma
-        tabla, así que no pueden discrepar.
+        Se excluyeron {DISCARDED.length} movimientos del origen: fuera del
+        periodo, sin liquidar, duplicados, en otra moneda o de monto cero. Los
+        ingresos y traspasos tampoco cuentan como gasto.
       </p>
     </section>
   )

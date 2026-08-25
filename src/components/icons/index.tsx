@@ -92,3 +92,59 @@ export const ChevronDownIcon = ({ className }: IconProps) => (
     <path d="m6 9 6 6 6-6" />
   </svg>
 )
+
+export const HousingIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.8V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.8" />
+    <path d="M9.5 21v-6h5v6" />
+  </svg>
+)
+
+export const GroceriesIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M2.5 3h2.2l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L20 7H6" />
+    <circle cx="9.5" cy="19.5" r="1.4" />
+    <circle cx="17" cy="19.5" r="1.4" />
+  </svg>
+)
+
+export const ShoppingIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M5 8h14l-1 12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 8Z" />
+    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+  </svg>
+)
+
+export const ServicesIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z" />
+  </svg>
+)
+
+export const HealthIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M12 20.5C7.5 17.8 4 14.2 4 10.3A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 8 2.3c0 3.9-3.5 7.5-8 10.2Z" />
+  </svg>
+)
+
+export const UncategorisedIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <circle cx="12" cy="12" r="9" strokeDasharray="3 3" />
+    <path d="M9.6 9.5a2.5 2.5 0 0 1 4.6 1.3c0 1.7-2.2 1.9-2.2 3.2" />
+    <path d="M12 17.3v.1" />
+  </svg>
+)
+
+export const SunIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </svg>
+)
+
+export const MoonIcon = ({ className }: IconProps) => (
+  <svg {...BASE} className={className}>
+    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />
+  </svg>
+)
