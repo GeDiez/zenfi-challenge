@@ -8,27 +8,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+**This project uses pnpm. Never run `npm` here** — it would write a `package-lock.json` beside the
+committed `pnpm-lock.yaml` and give CI and the working tree two different dependency graphs.
+
 ```bash
-npm run dev              # dev server, http://localhost:3005
-npm run build            # tsc -b && vite build
-npm run preview          # serve dist/ on :3005
-npm run typecheck        # tsc -b --noEmit
+pnpm dev                 # dev server, http://localhost:3005
+pnpm build               # tsc -b && vite build
+pnpm preview             # serve dist/ on :3005
+pnpm typecheck           # tsc -b --noEmit
 
-npm run lint             # eslint .
-npm run lint:fix
-npm run format           # prettier --write .
-npm run format:check
+pnpm lint                # eslint .
+pnpm lint:fix
+pnpm format              # prettier --write .
+pnpm format:check
 
-npm test                 # vitest run (single pass)
-npm run test:watch
-npm run test:coverage    # v8 provider, text + html reporters
+pnpm test                # vitest run (single pass)
+pnpm test:watch
+pnpm test:coverage       # v8 provider, text + html reporters
 ```
 
 Run a single test file or a single test case:
 
 ```bash
-npm test -- src/App.test.tsx
-npx vitest run -t "persists the theme choice"
+pnpm test src/App.test.tsx
+pnpm vitest run -t "persists the theme choice"
 ```
 
 ## Architecture and configuration
@@ -87,11 +90,12 @@ Series and status tokens come from a palette validated for colorblind separation
 
 ## CI
 
-`.github/workflows/ci.yml` runs two jobs on push to `main` and on pull requests: **Lint** (ESLint → `tsc` → Prettier) and **Test** (Vitest). Three things about it are deliberate:
+`.github/workflows/ci.yml` runs two jobs on push to `main` and on pull requests: **Lint** (ESLint → Prettier → `tsc`) and **Test** (Vitest). Three things about it are deliberate:
 
-- **The Node version comes from `.nvmrc`, never a literal in the workflow.** One file is the version, so CI and a local shell cannot silently diverge. `package.json` declares the matching `engines.node` floor.
-- **The TypeScript and Prettier steps carry `if: ${{ !cancelled() }}`.** They run even when ESLint failed, so a single run reports every problem. `!cancelled()` rather than `always()` — a cancelled run should stop, not keep burning minutes.
-- **`npm ci`, never `npm install`.** CI installs exactly the committed lockfile. That lockfile must keep its `linux-x64-gnu` entries for `@rolldown/binding`, `lightningcss` and `@tailwindcss/oxide`; regenerating it in a way that drops other platforms' optional binaries breaks CI while working locally.
+- **Neither tool version is written in the workflow.** Node comes from `.nvmrc`, pnpm from `packageManager` in `package.json`. One file per version means CI and a local shell cannot silently diverge; `engines.node` declares the matching floor.
+- **`pnpm/action-setup` runs BEFORE `actions/setup-node`.** `cache: pnpm` resolves the store path by invoking pnpm, so pnpm has to already be on PATH. Reversing the two breaks the cache step.
+- **The Prettier and TypeScript steps carry `if: ${{ !cancelled() }}`.** They run even when ESLint failed, so a single run reports every problem. `!cancelled()` rather than `always()` — a cancelled run should stop, not keep burning minutes.
+- **`pnpm install --frozen-lockfile`.** CI installs exactly the committed lockfile and fails rather than silently updating it. That lockfile must keep its `linux-x64` entries for `@rolldown/binding`, `lightningcss` and `@tailwindcss/oxide`; regenerating it in a way that drops other platforms' optional binaries breaks CI while working locally.
 
 There is no build job: `tsc` covers typechecking, but nothing currently verifies `vite build` succeeds. A bundler-only failure would reach `main`.
 

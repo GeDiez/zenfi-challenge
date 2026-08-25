@@ -9,13 +9,15 @@ meant to be replaced once the app has a subject.
 
 ## Requirements
 
-Node 22.12 or newer. The exact version CI uses is in `.nvmrc`.
+Node 22.12 or newer, and **pnpm** — this project does not use npm. The exact Node version CI uses
+is in `.nvmrc`; the pnpm version is pinned by `packageManager` in `package.json`, so
+`corepack enable` is enough to get the right one.
 
 ## Getting started
 
 ```bash
-npm install
-npm run dev        # http://localhost:3005
+pnpm install
+pnpm dev           # http://localhost:3005
 ```
 
 The dev server is pinned to port 3005 with `strictPort`, so it fails loudly if
@@ -23,38 +25,38 @@ the port is taken rather than silently moving to another one.
 
 ## Scripts
 
-| Script                  | What it does                                            |
-| ----------------------- | ------------------------------------------------------- |
-| `npm run dev`           | Dev server on port 3005                                 |
-| `npm run build`         | Typecheck the project references, then build to `dist/` |
-| `npm run preview`       | Serve the production build on port 3005                 |
-| `npm run typecheck`     | `tsc -b --noEmit`                                       |
-| `npm run lint`          | ESLint over the repo                                    |
-| `npm run lint:fix`      | ESLint with `--fix`                                     |
-| `npm run format`        | Prettier over the repo                                  |
-| `npm run format:check`  | Prettier in check mode                                  |
-| `npm test`              | Vitest, single pass                                     |
-| `npm run test:watch`    | Vitest in watch mode                                    |
-| `npm run test:coverage` | Vitest with v8 coverage                                 |
+| Script               | What it does                                            |
+| -------------------- | ------------------------------------------------------- |
+| `pnpm dev`           | Dev server on port 3005                                 |
+| `pnpm build`         | Typecheck the project references, then build to `dist/` |
+| `pnpm preview`       | Serve the production build on port 3005                 |
+| `pnpm typecheck`     | `tsc -b --noEmit`                                       |
+| `pnpm lint`          | ESLint over the repo                                    |
+| `pnpm lint:fix`      | ESLint with `--fix`                                     |
+| `pnpm format`        | Prettier over the repo                                  |
+| `pnpm format:check`  | Prettier in check mode                                  |
+| `pnpm test`          | Vitest, single pass                                     |
+| `pnpm test:watch`    | Vitest in watch mode                                    |
+| `pnpm test:coverage` | Vitest with v8 coverage                                 |
 
 Run a single test file or a single case:
 
 ```bash
-npm test -- src/App.test.tsx
-npx vitest run -t "persists the theme choice"
+pnpm test src/App.test.tsx
+pnpm vitest run -t "persists the theme choice"
 ```
 
 ## CI
 
 `.github/workflows/ci.yml` runs on every push to `main` and on every pull request, in two jobs:
 
-- **Lint** — ESLint, then `tsc`, then Prettier in check mode. The last two run even when an earlier
+- **Lint** — ESLint, then Prettier in check mode, then `tsc`. The last two run even when an earlier
   check fails, so one run reports every problem instead of one per push.
 - **Test** — the Vitest suite, single pass.
 
-Both install with `npm ci` against the committed lockfile and read the Node version from `.nvmrc`,
-so a green local run means the same versions ran in CI. Reproduce a failure with `npm run lint`,
-`npm run typecheck`, `npm run format:check`, or `npm test`.
+Both install with `pnpm install --frozen-lockfile` against the committed lockfile, and take pnpm
+from `packageManager` and Node from `.nvmrc`, so a green local run means the same versions ran in
+CI. Reproduce a failure with `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, or `pnpm test`.
 
 ## Conventions
 

@@ -95,7 +95,7 @@ beforeEach(() => {
 })
 ```
 
-Prove the isolation rather than assuming it: `npx vitest run --sequence.shuffle`. A suite that only
+Prove the isolation rather than assuming it: `pnpm vitest run --sequence.shuffle`. A suite that only
 passes in declaration order is already broken; it just hasn't reported it yet.
 
 ---
@@ -285,12 +285,12 @@ a test failed to reset (§3), which is a real bug that will eventually bite in p
 ## 15. Running tests
 
 ```bash
-npm test                          # whole suite, single pass
-npm test -- src/App.test.tsx      # one file
-npx vitest run -t "name"          # one case by name
-npx vitest run --sequence.shuffle # prove isolation
-npm run test:watch
-npm run test:coverage
+pnpm test                          # whole suite, single pass
+pnpm test src/App.test.tsx         # one file
+pnpm vitest run -t "name"          # one case by name
+pnpm vitest run --sequence.shuffle # prove isolation
+pnpm test:watch
+pnpm test:coverage
 ```
 
 Iterate on one file, but run the full suite before pushing.

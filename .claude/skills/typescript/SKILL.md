@@ -131,6 +131,6 @@ Type-check and lint the **whole** project, never scoped to your diff — a scope
 elsewhere, and the whole project is what CI checks:
 
 ```bash
-npm run typecheck
-npm run lint
+pnpm typecheck
+pnpm lint
 ```

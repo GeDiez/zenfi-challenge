@@ -21,27 +21,32 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Must come BEFORE setup-node: the npm/pnpm cache resolves the store
+      # path by invoking pnpm, so pnpm has to already be on PATH. The version
+      # is read from `packageManager` in package.json — never duplicated here.
+      - uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Each check reports even when an earlier one failed, so a single run
       # surfaces every problem instead of one per push. `!cancelled()` rather
       # than `always()`: a cancelled run should stop, not keep burning minutes.
       - name: ESLint
-        run: npm run lint
-
-      - name: TypeScript
-        if: ${{ !cancelled() }}
-        run: npm run typecheck
+        run: pnpm lint
 
       - name: Prettier
         if: ${{ !cancelled() }}
-        run: npm run format:check
+        run: pnpm format:check
+
+      - name: TypeScript
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck
 
   test:
     name: Test
@@ -49,13 +54,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Vitest
-        run: npm test
+        run: pnpm test

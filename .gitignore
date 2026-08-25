@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# This project uses pnpm. A stray `npm install` writes this file and gives the
+# working tree a second, disagreeing dependency graph — never commit it.
+package-lock.json
+yarn.lock
