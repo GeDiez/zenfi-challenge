@@ -97,7 +97,18 @@ Series and status tokens come from a palette validated for colorblind separation
 - **The Prettier and TypeScript steps carry `if: ${{ !cancelled() }}`.** They run even when ESLint failed, so a single run reports every problem. `!cancelled()` rather than `always()` — a cancelled run should stop, not keep burning minutes.
 - **`pnpm install --frozen-lockfile`.** CI installs exactly the committed lockfile and fails rather than silently updating it. That lockfile must keep its `linux-x64` entries for `@rolldown/binding`, `lightningcss` and `@tailwindcss/oxide`; regenerating it in a way that drops other platforms' optional binaries breaks CI while working locally.
 
-There is no build job: `tsc` covers typechecking, but nothing currently verifies `vite build` succeeds. A bundler-only failure would reach `main`.
+Two more jobs handle the site:
+
+- **Build** runs `pnpm build` on every event, pull requests included, with `VITE_BASE_PATH` set from the repository name. Building PRs the same way CI deploys them is the point: a base-path mistake fails in review rather than on the live site.
+- **Deploy** publishes `dist/` to GitHub Pages, gated on `needs: [lint, test, build]` and on being a push to `main`. It carries job-scoped `pages: write` + `id-token: write`, which **replace** the workflow-level `contents: read` rather than adding to it. Its concurrency group is `pages` with `cancel-in-progress: false` — cancelling a deploy midway can leave the site half-published, so this one queues instead.
+
+### GitHub Pages serves from a subpath
+
+The site lives at `https://gediez.github.io/zenfi-challenge/`, not at a domain root, so an asset URL emitted as `/assets/…` is a 404. `vite.config.ts` sets `base` from `VITE_BASE_PATH`, defaulting to `/` so local dev and preview are unaffected. Keep the repository name out of that file — CI supplies it.
+
+Reproduce a Pages build locally with `VITE_BASE_PATH=/zenfi-challenge/ pnpm build`.
+
+**Pages has no SPA fallback.** The moment a client-side router lands, a deep link returns a real 404 unless `dist/404.html` is a copy of `index.html`. Nothing does this today because there is no router.
 
 ## Project skills
 

@@ -53,10 +53,30 @@ pnpm vitest run -t "persists the theme choice"
 - **Lint** — ESLint, then Prettier in check mode, then `tsc`. The last two run even when an earlier
   check fails, so one run reports every problem instead of one per push.
 - **Test** — the Vitest suite, single pass.
+- **Build** — `pnpm build`, on every event including pull requests.
+- **Deploy** — publishes `dist/` to GitHub Pages. Runs only on a push to `main`, and only after the
+  three jobs above are green.
 
 Both install with `pnpm install --frozen-lockfile` against the committed lockfile, and take pnpm
 from `packageManager` and Node from `.nvmrc`, so a green local run means the same versions ran in
 CI. Reproduce a failure with `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, or `pnpm test`.
+
+## Deployment
+
+The site is published to **https://gediez.github.io/zenfi-challenge/** by the `deploy` job.
+
+GitHub Pages serves a project site from `/<repo>/` rather than the domain root, so the build needs
+a matching `base`. `vite.config.ts` reads it from `VITE_BASE_PATH`, which CI sets from the
+repository name — the repo name is never hardcoded in the config, and local `pnpm dev` / `pnpm
+preview` stay at `/`. To reproduce a Pages build locally:
+
+```bash
+VITE_BASE_PATH=/zenfi-challenge/ pnpm build
+```
+
+**When a client-side router is added, Pages will need a `404.html`.** Pages has no SPA fallback: a
+deep link is a real 404 unless `dist/404.html` is a copy of `index.html`. There is no router yet, so
+nothing does this today.
 
 ## Conventions
 
