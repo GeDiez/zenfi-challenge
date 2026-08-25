@@ -147,7 +147,7 @@ Three fixed results drive the code, and each has a comment where it applies:
 
 - **`--color-good` fails as text** (3.18:1 on the light page). Success/failure _text_ uses `--color-delta-up` / `--color-delta-down`; the status tokens are fills.
 - **No single text colour clears 4.5:1 across the categorical hues** — white fails on three, ink on two. Category and CTA cards are a 12% tint with ink copy, never a saturated slab. Icons on a saturated chip use `--color-on-accent` (ink), measured at ≥3.98:1 everywhere.
-- **The CTA button is `seq-600`**, which flips deep-blue → pale-blue between modes, with `--color-on-cta` flipping white → ink. `series-1` with white text measures 4.42:1 / 3.64:1 and fails.
+- **`--color-brand` is the Zenfi purple and is NOT a categorical slot** — it identifies the product, never a data series. Its dark value is the same hue lifted (`#8b53f5`), because `#5b0be1` measures 2.39:1 against the dark page and is effectively invisible there. White on the brand fill clears 8.14:1 light and 4.51:1 dark.
 
 Sign, arrow and wording always carry direction too, so a negative balance reads as negative without colour.
 

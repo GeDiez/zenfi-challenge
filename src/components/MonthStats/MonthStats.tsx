@@ -40,18 +40,17 @@ export const MonthStats = () => {
         ))}
 
         {/*
-          A tinted surface, not a saturated slab. White on `series-1` measures
-          4.42:1 in light and 3.64:1 in dark — both under the 4.5:1 a body-size
-          string needs — so the accent is spent on the button and the copy stays
-          in ink.
+          The Zenfi brand purple, and a tinted surface rather than a saturated
+          slab: body-size copy on a solid accent kept landing under 4.5:1, so
+          the fill is spent on the button and the copy stays in ink.
         */}
         <li
           className="flex flex-col justify-between gap-4 rounded-2xl border p-5"
           style={{
             backgroundColor:
-              'color-mix(in oklab, var(--color-series-1) 12%, var(--color-surface))',
+              'color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))',
             borderColor:
-              'color-mix(in oklab, var(--color-series-1) 28%, transparent)',
+              'color-mix(in oklab, var(--color-brand) 30%, transparent)',
           }}
         >
           <div>
@@ -71,7 +70,7 @@ export const MonthStats = () => {
             // through `window.opener`.
             rel="noopener noreferrer"
             aria-label="Descarga Zenfi (abre en una pestaña nueva)"
-            className="inline-flex w-fit items-center rounded-lg bg-seq-600 px-4 py-2 text-sm font-medium text-on-cta transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-series-1"
+            className="inline-flex w-fit items-center rounded-lg bg-brand px-4 py-2 text-sm font-medium text-on-brand transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             Descargar
           </a>

@@ -78,12 +78,19 @@
   --color-on-accent: #0b0b0b;
 
   /*
-   * Text sitting on the solid call-to-action, whose background is `seq-600` and
-   * therefore flips from a deep blue in light to a pale blue in dark. Measured:
-   * white on #184f95 is 8.10:1, ink on #86b6ef is 9.33:1. A single fixed value
-   * would fail one of the two.
+   * The Zenfi brand purple. Deliberately NOT one of the categorical slots: it
+   * identifies the product, never a data series, and must never be read as a
+   * category's colour.
+   *
+   * The dark value is the same hue lifted for the dark surface, the way every
+   * other token in this file handles dark. #5b0be1 measures 2.39:1 against the
+   * dark page — under the 3:1 a mark needs, i.e. effectively invisible. #8b53f5
+   * measures 4.31:1 there, and still clears 4.51:1 with white text on top.
    */
-  --color-on-cta: #ffffff;
+  --color-brand: #5b0be1;
+
+  /* Text on the brand fill: 8.14:1 in light, 4.51:1 in dark. */
+  --color-on-brand: #ffffff;
 
   /* Directional delta ink (text, so it carries its own contrast) */
   --color-delta-up: #006300;
@@ -128,7 +135,7 @@
 
       --color-delta-up: #0ca30c;
       --color-delta-down: #d03b3b;
-      --color-on-cta: #0b0b0b;
+      --color-brand: #8b53f5;
     }
   }
 
@@ -163,7 +170,7 @@
 
     --color-delta-up: #0ca30c;
     --color-delta-down: #d03b3b;
-    --color-on-cta: #0b0b0b;
+    --color-brand: #8b53f5;
   }
 
   :root {
