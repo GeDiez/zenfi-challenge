@@ -85,6 +85,16 @@ Series and status tokens come from a palette validated for colorblind separation
 
 `tsconfig.json` is a solution file with no `files`; it references `tsconfig.app.json` (covers `src`, DOM libs, `jsx: react-jsx`) and `tsconfig.node.json` (covers `vite.config.ts`, Node types). Compiler options must go in the right leaf config — editing the root does nothing. Both enable `strict`, `verbatimModuleSyntax` and `erasableSyntaxOnly`, so type-only imports need the `type` keyword and TS-only runtime syntax (enums, parameter properties) is rejected. `strict` was not in the Vite template and was turned on afterwards; do not let it drift back off.
 
+## CI
+
+`.github/workflows/ci.yml` runs two jobs on push to `main` and on pull requests: **Lint** (ESLint → `tsc` → Prettier) and **Test** (Vitest). Three things about it are deliberate:
+
+- **The Node version comes from `.nvmrc`, never a literal in the workflow.** One file is the version, so CI and a local shell cannot silently diverge. `package.json` declares the matching `engines.node` floor.
+- **The TypeScript and Prettier steps carry `if: ${{ !cancelled() }}`.** They run even when ESLint failed, so a single run reports every problem. `!cancelled()` rather than `always()` — a cancelled run should stop, not keep burning minutes.
+- **`npm ci`, never `npm install`.** CI installs exactly the committed lockfile. That lockfile must keep its `linux-x64-gnu` entries for `@rolldown/binding`, `lightningcss` and `@tailwindcss/oxide`; regenerating it in a way that drops other platforms' optional binaries breaks CI while working locally.
+
+There is no build job: `tsc` covers typechecking, but nothing currently verifies `vite build` succeeds. A bundler-only failure would reach `main`.
+
 ## Project skills
 
 `.claude/skills/` holds three repo-scoped skills — `component-anatomy`, `testing`, `typescript` — adapted from another repo and rewritten against this stack. They are self-contained: none of them points at a skill that does not exist here. Two consequences when editing them:

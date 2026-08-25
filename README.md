@@ -9,7 +9,7 @@ meant to be replaced once the app has a subject.
 
 ## Requirements
 
-Node 22 or newer.
+Node 22.12 or newer. The exact version CI uses is in `.nvmrc`.
 
 ## Getting started
 
@@ -43,6 +43,18 @@ Run a single test file or a single case:
 npm test -- src/App.test.tsx
 npx vitest run -t "persists the theme choice"
 ```
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull request, in two jobs:
+
+- **Lint** — ESLint, then `tsc`, then Prettier in check mode. The last two run even when an earlier
+  check fails, so one run reports every problem instead of one per push.
+- **Test** — the Vitest suite, single pass.
+
+Both install with `npm ci` against the committed lockfile and read the Node version from `.nvmrc`,
+so a green local run means the same versions ran in CI. Reproduce a failure with `npm run lint`,
+`npm run typecheck`, `npm run format:check`, or `npm test`.
 
 ## Conventions
 
